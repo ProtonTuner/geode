@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+
+# Uso: ./build_android.sh /ruta/al/android-ndk
+# O exporta ANDROID_NDK_ROOT antes de ejecutar.
+NDK=${ANDROID_NDK_ROOT:-${1:-}}
+if [ -z "$NDK" ]; then
+  echo "Uso: $0 /ruta/al/android-ndk  (o exporta ANDROID_NDK_ROOT)"
+  exit 1
+fi
+
+
+PROJECT_NAME=PhysicsTPS
+ROOT_DIR="$(cd "$(dirname "$0")" && pwd)"
+DIST_DIR="$ROOT_DIR/dist"
+mkdir -p "$DIST_DIR"
+
+
+ABIS=("armeabi-v7a" "arm64-v8a")
+ANDROID_PLATFORM="android-21" # ajusta si necesitas otra versión mínima
+
+
+for ABI in "${ABIS[@]}"; do
+  BUILD_DIR="$ROOT_DIR/build-$ABI"
+  rm -rf "$BUILD_DIR"
+  mkdir -p "$BUILD_DIR"
+  pushd "$BUILD_DIR" >/dev/null
+
+
+  cmake \
+    -DCMAKE_TOOLCHAIN_FILE="$NDK/build/cmake/android.toolchain.cmake" \
+    -DANDROID_ABI="$ABI" \
+    -DANDROID_PLATFORM="$ANDROID_PLATFORM" \
+    -DCMAKE_BUILD_TYPE=Release \
+    ..
+
+
+  cmake --build . -- -j$(nproc)
+
+
+  # Copiar .so resultante a dist/<abi> (intenta localizar el .so generado)
+  OUT_DIR="$DIST_DIR/$ABI"
+  mkdir -p "$OUT_DIR"
+  find . -type f -name "lib${PROJECT_NAME}.so" -exec cp {} "$OUT_DIR/" \; || true
+
+
+  # También copia any other .so in case geode naming differs
+  find . -type f -name "*.so" -exec cp {} "$OUT_DIR/" \; || true
+
+
+  popd >/dev/null
+done
+
+
+echo "Builds completos. Archivos en $DIST_DIR/<abi>/"
