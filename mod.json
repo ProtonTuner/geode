@@ -1,0 +1,58 @@
+{
+    "geode": "5.0.0",
+    "gd": {
+        "win": "2.2081",
+        "mac": "2.2081",
+        "android": "2.2081"
+    },
+    "version": "v1.0.1",
+    "id": "zmx.cbf-lite",
+    "name": "Physics TPS Bypass",
+    "developer": "Paradox",
+    "description": "Fuerza la fisica del jugador a una tasa fija configurable (hasta 10000 TPS), con interpolacion visual. Aplica tanto en niveles como en el editor. Sin lag incluso a TPS extremadamente altos.",
+    "repository": "https://github.com/paradox/physicstps",
+    "changelog": "https://github.com/paradox/physicstps/releases",
+    "early-load": false,
+    "tags": [
+        "gameplay",
+        "performance",
+        "enhancement",
+        "physics",
+        "verification"
+    ],
+    "settings": {
+        "physics-bypass-enabled": {
+            "name": "Physics TPS Bypass",
+            "description": "<cr>Experimental.</c> Re-ejecuta la fisica del juego a una tasa fija, independiente del framerate.",
+            "type": "bool",
+            "default": true
+        },
+        "physics-bypass-tps": {
+            "name": "Physics Bypass TPS",
+            "description": "Tasa objetivo de steps de fisica por segundo. <cr>Valores muy altos (varios miles) pueden bajar el framerate severamente, sobre todo en Android.</c>",
+            "type": "int",
+            "default": 480,
+            "min": 60,
+            "max": 10000
+        },
+        "physics-bypass-show-indicator": {
+            "name": "Show TPS Indicator",
+            "description": "Muestra un indicador en pantalla con el TPS de fisica objetivo y el TPS real medido, para confirmar que el bypass esta funcionando.",
+            "type": "bool",
+            "default": true
+        },
+        "physics-bypass-render-mode": {
+            "name": "Render Mode",
+            "description": "<cy>Interpolate</c>: dibuja entre el ultimo step calculado y el anterior (suave, con un pequeno delay). <cg>Extrapolate</c>: predice la posicion usando la velocidad actual (sin delay, pero puede corregirse de golpe si el movimiento cambia brusco).",
+            "type": "string",
+            "one-of": ["interpolate", "extrapolate"],
+            "default": "interpolate"
+        },
+        "physics-bypass-show-trail": {
+            "name": "Show Hitbox Trail",
+            "description": "Dibuja la hitbox del jugador en cada step de fisica ejecutado dentro del frame actual. Sirve para confirmar visualmente cuantos steps reales estan corriendo (si el trail es enorme o esta vacio, algo anda mal).",
+            "type": "bool",
+            "default": false
+        }
+    }
+}
