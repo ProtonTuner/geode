@@ -1,0 +1,66 @@
+name: Build Geode Mod
+
+on:
+  push:
+    branches: [main, master, develop]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake git
+      
+      - name: Download Geode SDK
+        run: |
+          mkdir -p ~/geode-sdk
+          cd ~/geode-sdk
+          git clone https://github.com/geode-sdk/geode.git .
+          echo "GEODE_SDK=$HOME/geode-sdk" >> $GITHUB_ENV
+      
+      - name: Verify Geode SDK
+        run: |
+          echo "Geode SDK path: $GEODE_SDK"
+          ls -la $GEODE_SDK/CMakeLists.txt
+      
+      - name: Build mod
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DGEODE_SDK=$GEODE_SDK ..
+          cmake --build . --config Release
+      
+      - name: Check compiled binaries
+        run: |
+          echo "=== Compiled binaries ==="
+          find build -type f \( -name "*.so" -o -name "*.geode" \) 2>/dev/null | sort || echo "No binaries found yet"
+          echo ""
+          echo "=== Full build directory ==="
+          ls -lah build/
+      
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: geode-mod-build
+          path: build/
+          retention-days: 30
+      
+      - name: Create Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/**/*.geode
+          files: build/**/*.so
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
