@@ -1,18 +1,12 @@
 cmake_minimum_required(VERSION 3.21)
 project(PhysicsTPS VERSION 1.0.1 LANGUAGES CXX)
 
-# Detectar plataforma
-if(WIN32)
-    set(GEODE_TARGET_PLATFORM win)
-elseif(APPLE)
-    set(GEODE_TARGET_PLATFORM mac)
-elseif(ANDROID)
-    set(GEODE_TARGET_PLATFORM android)
 # Configuración de C++
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
-# Incluir Geode
+# Incluir Geode SDK
 include(FetchContent)
 FetchContent_Declare(
     geode
@@ -28,7 +22,7 @@ geode_add_mod(
     ID paradox.physicstps
 )
 
-# Archivos fuente
+# Archivos fuente comunes
 target_sources(
     ${PROJECT_NAME}
     PRIVATE
@@ -36,23 +30,21 @@ target_sources(
     src/main.hpp
 )
 
-# Plataforma específica
-if(GEODE_TARGET_PLATFORM STREQUAL "windows")
+# Archivos específicos por plataforma
+if(GEODE_PLATFORM_WINDOWS)
     target_sources(${PROJECT_NAME} PRIVATE src/windows.cpp)
-elseif(GEODE_TARGET_PLATFORM STREQUAL "android")
+    message(STATUS "Building for Windows")
+elseif(GEODE_PLATFORM_MACOS)
+    target_sources(${PROJECT_NAME} PRIVATE src/macos.cpp)
+    message(STATUS "Building for macOS")
+elseif(GEODE_PLATFORM_ANDROID)
     target_sources(${PROJECT_NAME} PRIVATE src/android.cpp)
+    message(STATUS "Building for Android")
 endif()
 
 # Optimizaciones
 target_compile_options(${PROJECT_NAME} PRIVATE
     $<$<CONFIG:Release>:-O3>
-    $<$<CONFIG:RelWithDebInfo>:-O2>
 )
 
-# Configuración del mod.json
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    MOD_ID "paradox.physicstps"
-    MOD_NAME "Physics TPS Bypass"
-    MOD_VERSION "1.0.1"
-    MOD_DESCRIPTION "Fuerza la fisica del jugador a una tasa fija configurable"
-)
+message(STATUS "Physics TPS Bypass configured for ${GEODE_PLATFORM}")
