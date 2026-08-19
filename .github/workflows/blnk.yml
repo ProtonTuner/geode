@@ -1,0 +1,63 @@
+name: Build Physics TPS Mod
+
+on:
+  push:
+    branches: [ main, master, develop ]
+    tags: [ "v*" ]
+  pull_request:
+    branches: [ main, master, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      
+      - name: Setup Geode environment
+        run: |
+          echo "Setting up Geode SDK..."
+          # Verificar que Geode está disponible
+          which geode || echo "Geode CLI not in PATH, will try to install"
+      
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential cmake
+      
+      - name: Build Physics TPS Mod
+        run: |
+          mkdir -p build
+          cd build
+          cmake ..
+          cmake --build . --config Release
+          cd ..
+      
+      - name: Verify binaries
+        run: |
+          echo "Checking generated binaries..."
+          find . -name "*.so" -o -name "*.geode" | head -20
+      
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Physics-TPS-Build
+          path: |
+            build/**/*.geode
+            build/**/*.so
+          retention-days: 30
+      
+      - name: Create Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            build/**/*.geode
+            build/**/*.so
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
