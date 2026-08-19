@@ -29,7 +29,7 @@ FetchContent_MakeAvailable(geode)
 geode_add_mod(
     ${PROJECT_NAME}
     VERSION 1.0.1
-    ID zmx.cbf-lite
+    ID paradox.physicstps
 )
 
 # Archivos fuente
@@ -55,7 +55,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
 
 # Configuración del mod.json
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    MOD_ID "zmx.cbf-lite"
+    MOD_ID "paradox.physicstps"
     MOD_NAME "Physics TPS Bypass"
     MOD_VERSION "1.0.1"
     MOD_DESCRIPTION "Fuerza la fisica del jugador a una tasa fija configurable"
